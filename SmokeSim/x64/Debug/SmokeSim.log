@@ -1,2 +1,28 @@
-﻿  main.cpp
+﻿  SmokeGrid.cpp
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(19,10): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(20,8): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(266,66): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(266,36): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(267,61): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(267,37): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(281,12): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(282,12): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(414,20): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(415,19): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
   SmokeSim.vcxproj -> C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\x64\Debug\SmokeSim.exe

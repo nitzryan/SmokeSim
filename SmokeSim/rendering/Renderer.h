@@ -31,8 +31,8 @@ private:
 	GLuint ebo;
 	GLuint shaderProgram;
 	const int vertexSize = 12;
-	const int vboSize = 100000 * vertexSize;
-	const int indicesSize = 100000;
+	const int vboSize = 400000 * vertexSize;
+	const int indicesSize = 400000;
 	std::vector<float> vboContents;
 	std::vector<unsigned int> indices;
 	unsigned int currentVboLoc;

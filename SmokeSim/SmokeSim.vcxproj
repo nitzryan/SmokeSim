@@ -162,6 +162,8 @@
     <ClInclude Include="rendering\RenderingData.h" />
     <ClInclude Include="sdl\SDL.h" />
     <ClInclude Include="smoke\SmokeGrid.h" />
+    <ClInclude Include="smoke\SmokeGridReplay.h" />
+    <ClInclude Include="smoke\SmokeSetup.h" />
     <ClInclude Include="textures\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +174,8 @@
     <ClCompile Include="rendering\RectRenderable.cpp" />
     <ClCompile Include="rendering\Renderer.cpp" />
     <ClCompile Include="smoke\SmokeGrid.cpp" />
+    <ClCompile Include="smoke\SmokeGridReplay.cpp" />
+    <ClCompile Include="smoke\SmokeSetup.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -90,6 +90,12 @@
     <ClInclude Include="smoke\SmokeGrid.h">
       <Filter>smoke</Filter>
     </ClInclude>
+    <ClInclude Include="smoke\SmokeSetup.h">
+      <Filter>smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="smoke\SmokeGridReplay.h">
+      <Filter>smoke</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad\glad.c">
@@ -111,6 +117,12 @@
       <Filter>Resource Files</Filter>
     </ClCompile>
     <ClCompile Include="smoke\SmokeGrid.cpp">
+      <Filter>smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="smoke\SmokeSetup.cpp">
+      <Filter>smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="smoke\SmokeGridReplay.cpp">
       <Filter>smoke</Filter>
     </ClCompile>
   </ItemGroup>

@@ -9,6 +9,7 @@
 #include "rendering/Camera.h"
 #include "rendering/Renderer.h"
 #include "smoke/SmokeGrid.h"
+#include "smoke/SmokeGridReplay.h"
 
 struct ScreenDetails {
 	bool fullscreen;
@@ -84,6 +85,21 @@ int GetInput(UserInput& input, SDL_Event& windowEvent) {
 }
 
 int main(int, char**) {
+	SmokeSetup campfire = SmokeSetup::Campfire();
+	SmokeSetup balldrag = SmokeSetup::BallDrag();
+	/*SmokeGrid::CalculateToFile(4096, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_4096_01.csv");
+	SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_8192_01.csv");
+	SmokeGrid::CalculateToFile(16384, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_16384_01.csv");
+	SmokeGrid::CalculateToFile(32768, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_32768_01.csv");
+	SmokeGrid::CalculateToFile(65536, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_65536_01.csv");
+	SmokeGrid::CalculateToFile(4096, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_4096_001.csv");
+	SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_8192_001.csv");
+	SmokeGrid::CalculateToFile(16384, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_16384_001.csv");
+	SmokeGrid::CalculateToFile(32768, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_32768_001.csv");
+	SmokeGrid::CalculateToFile(65536, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_65536_001.csv");
+	return 0;*/
+	//SmokeGridReplay replay("prerenders/Balldrag_8192_001.csv");
+	
 	// Setup SDL
 	SDL_Init(SDL_INIT_VIDEO);
 	// Get Versions
@@ -125,7 +141,7 @@ int main(int, char**) {
 	const std::chrono::duration<float> targetFrameTime(0.01);
 
 	UserInput input;
-	SmokeGrid grid;
+	SmokeGrid grid(8192, campfire, 0.001);
 
 	while (!input.quit) {
 		// Keyboard events
@@ -143,16 +159,16 @@ int main(int, char**) {
 
 		if (input.mouseMoved) {
 			input.mouseMoved = false;
-			grid.MouseMove(input.mouseX, input.mouseY);
+			//grid.MouseMove(input.mouseX, input.mouseY);
 		}
 
 		if (input.mousePressed) {
-			grid.MouseDown(input.mouseX, input.mouseY);
+			//grid.MouseDown(input.mouseX, input.mouseY);
 			input.mousePressed = false;
 		}
 
 		if (input.mouseDepressed) {
-			grid.MouseUp();
+			//grid.MouseUp();
 			input.mouseDepressed = false;
 		}
 
@@ -165,10 +181,12 @@ int main(int, char**) {
 
 		if (input.lctrl)
 			grid.Update(frameTime);
+			//replay.Update(frameTime);
 
 		renderer.SetCamera(camera);
 
-		grid.Render(renderer);
+		renderer.Render(grid);
+		//renderer.Render(replay);
 
 		renderer.FinalizeFrame();
 
