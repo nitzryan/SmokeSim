@@ -26,13 +26,13 @@ struct smokeSource {
 	float y1;
 	float intensity;
 	float heat;
-	float fuel;
 	Vec2F vel;
 };
 
 struct SmokeSetup
 {
 	static SmokeSetup Campfire();
+	static SmokeSetup Campfire2();
 	static SmokeSetup BallDrag();
 
 	std::vector<circleObj> circles;

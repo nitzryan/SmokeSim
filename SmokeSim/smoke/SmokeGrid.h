@@ -40,7 +40,6 @@ private:
 		Vec2F vel;
 		float intensity;
 		float heat;
-		float fuel;
 	};
 
 	enum class ObstacleDirection {

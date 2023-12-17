@@ -1,26 +1,41 @@
 ﻿  SmokeGrid.cpp
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(19,10): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(20,8): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(266,66): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(266,36): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(267,61): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(267,37): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(281,12): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(21,10): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(22,8): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(276,19): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
           with
           [
               _Ty=double
           ]
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(282,12): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(277,14): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
           with
           [
               _Ty=double
           ]
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(414,20): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(278,19): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
           with
           [
               _Ty=double
           ]
-C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(415,19): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(286,66): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(286,36): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(287,61): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(287,37): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(299,12): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(300,12): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(430,20): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Users\nitzr\OneDrive\Documents\CSCI5611\SmokeSim\SmokeSim\smoke\SmokeGrid.cpp(435,14): warning C4244: 'initializing': conversion from '_Ty' to 'float', possible loss of data
           with
           [
               _Ty=double

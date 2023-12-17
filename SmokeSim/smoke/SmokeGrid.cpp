@@ -6,11 +6,14 @@
 
 #include "../rendering/BufferWriter.h"
 
-const double DIFFUSION_FACTOR = 0.001;
+const double DIFFUSION_FACTOR = 0.01;
 const float AMBIENT_TEMP = 280.0f;
-const double CONDUCTION = 0.00001;
+const double CONDUCTION = 0.02;
 const float MIN_TEMP_FIRE = 600.0f;
 const float O2_TO_TEMP = 100.0f;
+//const double STEF_BOLT_CONST = 0.0000000567;
+const double STEF_BOLT_CONST = 0.00000000567;
+const float LIFT_FACTOR = 0.05f;
 
 SmokeGrid::SmokeGrid(int approxTiles, const SmokeSetup& set, float st)
 {
@@ -49,9 +52,10 @@ SmokeGrid::SmokeGrid(int approxTiles, const SmokeSetup& set, float st)
 						i * h + j,
 						s.vel,
 						s.intensity,
-						s.heat,
-						s.fuel
+						s.heat
 						});
+					velX[i * h + j] = s.vel.x;
+					velY[i * h + j] = s.vel.y;
 				}
 			}
 		}
@@ -224,28 +228,60 @@ void SmokeGrid::linearSolver(std::vector<double>& x, std::vector<double>& x0, fl
 
 void SmokeGrid::UpdateStep(float stepTime)
 {
+	// Radiate away temperature
+	for (auto& i : temp) {
+		if (i < AMBIENT_TEMP) {
+			i = AMBIENT_TEMP;
+			continue;
+		}
+		double tempDelta = i - AMBIENT_TEMP;
+		i -= STEF_BOLT_CONST * tempDelta * tempDelta * tempDelta * tempDelta * stepTime;
+	}
+
 	// Sources
 	for (auto& i : sources) {
 		double added = stepTime * i.intensity * gridSize * gridSize;
 		smoke[i.tile] += added;
-		velX[i.tile] = i.vel.x;
-		velY[i.tile] = i.vel.y;
-		temp[i.tile] += stepTime * i.heat * gridSize * gridSize;
+		//velX[i.tile] = 0.9f * velX[i.tile] + 0.1f * i.vel.x;
+		//velY[i.tile] = 0.9f * velY[i.tile] + 0.1f * i.vel.y;
+		added = stepTime * i.heat;
+		temp[i.tile] = i.heat;
 	}
 
+	// Enforce left, right boundary conditions
 	for (int i = 0; i < h; i++) {
 		velX[i] = wind.x;
 		velX[w * h - i - 1] = wind.x;
 		velY[i] = wind.y;
 		velY[w * h - i - 1] = wind.y;
 	}
+	// Enforce top boundary conditions
+	for (int i = 0; i < w; i++) {
+		//velX[i * h + h - 1] = velX[i * h + h - 2];
+		velY[i * h + h - 1] = velY[i * h + h - 2];
+	}
+
 
 	std::vector<double> nextSmoke = smoke;
-	std::vector<double> nextTemp = std::vector<double>(w * h);
-	std::vector<double> nextO2 = std::vector<double>(w * h);
-	std::vector<double> nextFuel = std::vector<double>(w * h);
+	std::vector<double> nextTemp = temp;
 	std::vector<double> nextVelX = velX;
 	std::vector<double> nextVelY = velY;
+
+	
+
+	// Modify velocity based on density (inversely proportional to temperature)
+	for (int i = 1; i < w - 1; i++) {
+		for (int j = 1; j < h - 1; j++) {
+			int idx = i * h + j;
+			
+			float denBelow = temp[idx - 1];
+			float den = temp[idx];
+			float denAbove = temp[idx + 1];
+
+			velY[idx] += LIFT_FACTOR * stepTime * (denBelow - den);
+			velY[idx] += LIFT_FACTOR * stepTime * (den - denAbove);
+		}
+	}
 
 	// Diffusion
 	const float DIFFUSION_STEP_FACTOR = DIFFUSION_FACTOR * stepTime / ((double)gridSize * gridSize);
@@ -393,11 +429,36 @@ void SmokeGrid::Render(std::vector<float>& vbo, unsigned int vboLoc, unsigned in
 			}
 			else {
 				float modSmoke = smoke[n] / ((double)gridSize * gridSize);
-				float modTemp = (temp[n] - 280.0f) / 320.0f;
 				float alpha = modSmoke / (1 + modSmoke);
+				ColorRGBA color(0.0f, 0.0f, 0.0f, alpha);
+
+				// Note temperatures are in kelvin
+				float tm = temp[n];
+				if (tm > 1300) { // yellow -> white flame
+					float c = std::min(0.8f + (tm - 1300) * 0.01f, 1.0f);
+					color.r = c;
+					color.g = c;
+					color.b = 0.1f + std::min((tm - 1300) * 0.06f, 0.9f);
+				}
+				else if (tm > 1000) { // orange -> yellow flame
+					color.r = 0.8f;
+					color.g = 0.4f + 0.4f * (tm - 1000.0f) / 300.0f;
+					color.b = 0.1f;
+				}
+				else if (tm > 800) { // smoke -> orange
+					color.r = 0.1f + 0.7f * (tm - 800.0f) / 200.0f;
+					color.g = 0.1f + 0.3f * (tm - 800.0f) / 200.0f;
+					color.b = 0.1f;
+				}
+				else {
+					float c = 0.1f * std::max((tm - 400.0f) / 400.0f, 0.0f);
+					color.r = c;
+					color.g = c;
+					color.b = c;
+				}
 				//alpha = modTemp;
-				BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(0.6f, 0.6f, 0.6f, alpha), normal, -1, -1);
-				//BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(1.0f, 0.0f, 0.0f, alpha), normal, -1, -1);
+				BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), color, normal, -1, -1);
+				//BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(1.0f, 1.0f, 1.0f, alpha), normal, -1, -1);
 			}
 			
 			n++;

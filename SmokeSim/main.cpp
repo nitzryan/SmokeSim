@@ -86,6 +86,7 @@ int GetInput(UserInput& input, SDL_Event& windowEvent) {
 
 int main(int, char**) {
 	SmokeSetup campfire = SmokeSetup::Campfire();
+	SmokeSetup campfire2 = SmokeSetup::Campfire2();
 	SmokeSetup balldrag = SmokeSetup::BallDrag();
 	/*SmokeGrid::CalculateToFile(4096, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_4096_01.csv");
 	SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_8192_01.csv");
@@ -141,7 +142,7 @@ int main(int, char**) {
 	const std::chrono::duration<float> targetFrameTime(0.01);
 
 	UserInput input;
-	SmokeGrid grid(8192, campfire, 0.001);
+	SmokeGrid grid(8192, campfire2, 0.002);
 
 	while (!input.quit) {
 		// Keyboard events
