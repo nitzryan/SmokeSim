@@ -87,18 +87,14 @@ int GetInput(UserInput& input, SDL_Event& windowEvent) {
 int main(int, char**) {
 	SmokeSetup campfire = SmokeSetup::Campfire();
 	SmokeSetup balldrag = SmokeSetup::BallDrag();
-	/*SmokeGrid::CalculateToFile(4096, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_4096_01.csv");
-	SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_8192_01.csv");
-	SmokeGrid::CalculateToFile(16384, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_16384_01.csv");
-	SmokeGrid::CalculateToFile(32768, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_32768_01.csv");
-	SmokeGrid::CalculateToFile(65536, balldrag, 10.0f, 0.01f, "prerenders/Balldrag_65536_01.csv");
-	SmokeGrid::CalculateToFile(4096, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_4096_001.csv");
-	SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_8192_001.csv");
-	SmokeGrid::CalculateToFile(16384, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_16384_001.csv");
-	SmokeGrid::CalculateToFile(32768, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_32768_001.csv");
-	SmokeGrid::CalculateToFile(65536, balldrag, 10.0f, 0.001f, "prerenders/Balldrag_65536_001.csv");
-	return 0;*/
-	//SmokeGridReplay replay("prerenders/Balldrag_8192_001.csv");
+	//SmokeGrid::CalculateToFile(8192, balldrag, 25.0f, 1, "prerenders/Balldrag_8192_1_Long.csv");
+	//SmokeGrid::CalculateToFile(65536, balldrag, 10.0f, 1, "prerenders/Balldrag_65536_1.csv");
+	//SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 10, "prerenders/Balldrag_8192_10.csv");
+	//SmokeGrid::CalculateToFile(65536, balldrag, 10.0f, 10, "prerenders/Balldrag_65536_10.csv");
+	//SmokeGrid::CalculateToFile(8192, balldrag, 10.0f, 100, "prerenders/Balldrag_8192_100.csv");
+	//SmokeGrid::CalculateToFile(65536, balldrag, 25.0f, 100, "prerenders/Balldrag_65536_100_Long.csv");
+	//return 0;
+	SmokeGridReplay replay("prerenders/Balldrag_8192_1.csv");
 	
 	// Setup SDL
 	SDL_Init(SDL_INIT_VIDEO);
@@ -141,7 +137,7 @@ int main(int, char**) {
 	const std::chrono::duration<float> targetFrameTime(0.01);
 
 	UserInput input;
-	SmokeGrid grid(8192, campfire, 0.001);
+	SmokeGrid grid(8192, balldrag, 0.0001);
 
 	while (!input.quit) {
 		// Keyboard events
@@ -180,13 +176,13 @@ int main(int, char**) {
 		float frameTime = dt.count();
 
 		if (input.lctrl)
-			grid.Update(frameTime);
-			//replay.Update(frameTime);
+			//grid.Update(frameTime);
+			replay.Update(frameTime);
 
 		renderer.SetCamera(camera);
 
-		renderer.Render(grid);
-		//renderer.Render(replay);
+		//renderer.Render(grid);
+		renderer.Render(replay);
 
 		renderer.FinalizeFrame();
 

@@ -23,7 +23,7 @@ public:
 	virtual void Render(std::vector<float>& vbo, unsigned int vboLoc, unsigned int pointCount, std::vector<unsigned int>& ebo, unsigned int eboLoc) override final;
 	virtual Material GetMaterial() const override final;
 
-	static void CalculateToFile(int approxTiles, const SmokeSetup& setup, float time, float stepTime, const char* filename);
+	static void CalculateToFile(int approxTiles, const SmokeSetup& setup, float time, int stepsPerRender, const char* filename);
 private:
 	int w, h;
 	float gridSize;
@@ -31,7 +31,6 @@ private:
 	float stepTime;
 	Vec2F wind;
 	std::vector<double> smoke;
-	std::vector<double> temp;
 	std::vector<double> velX, velY;
 	SmokeSetup setup;
 	

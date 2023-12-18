@@ -16,7 +16,6 @@ SmokeGridReplay::SmokeGridReplay(const char* filename)
 	char dummy;
 	file >> w >> dummy >> h;
 	file >> gridSize;
-	file >> stepTime;
 	for (int i = 0; i < w * h; i++) {
 		bool b;
 		file >> b >> dummy;

@@ -7,10 +7,7 @@
 #include "../rendering/BufferWriter.h"
 
 const double DIFFUSION_FACTOR = 0.001;
-const float AMBIENT_TEMP = 280.0f;
 const double CONDUCTION = 0.00001;
-const float MIN_TEMP_FIRE = 600.0f;
-const float O2_TO_TEMP = 100.0f;
 
 SmokeGrid::SmokeGrid(int approxTiles, const SmokeSetup& set, float st)
 {
@@ -22,8 +19,6 @@ SmokeGrid::SmokeGrid(int approxTiles, const SmokeSetup& set, float st)
 	gridSize = setup.width / (w - 1);
 	time = 0.f; stepTime = st;
 	smoke = std::vector<double>(w * h);
-	
-	temp = std::vector<double>(w * h, AMBIENT_TEMP);
 	wind = setup.wind;
 	velX = std::vector<double>(w * h, wind.x);
 	velY = std::vector<double>(w * h, wind.y);
@@ -230,7 +225,6 @@ void SmokeGrid::UpdateStep(float stepTime)
 		smoke[i.tile] += added;
 		velX[i.tile] = i.vel.x;
 		velY[i.tile] = i.vel.y;
-		temp[i.tile] += stepTime * i.heat * gridSize * gridSize;
 	}
 
 	for (int i = 0; i < h; i++) {
@@ -240,10 +234,11 @@ void SmokeGrid::UpdateStep(float stepTime)
 		velY[w * h - i - 1] = wind.y;
 	}
 
+	for (int i = 0; i < w; i++) {
+		velY[i * h + h - 1] = velY[i * h + h - 2];
+	}
+
 	std::vector<double> nextSmoke = smoke;
-	std::vector<double> nextTemp = std::vector<double>(w * h);
-	std::vector<double> nextO2 = std::vector<double>(w * h);
-	std::vector<double> nextFuel = std::vector<double>(w * h);
 	std::vector<double> nextVelX = velX;
 	std::vector<double> nextVelY = velY;
 
@@ -252,7 +247,6 @@ void SmokeGrid::UpdateStep(float stepTime)
 	const float CONDUCTION_STEP_FACTOR = CONDUCTION * stepTime / ((double)gridSize * gridSize);
 
 	linearSolver(nextSmoke, smoke, DIFFUSION_STEP_FACTOR, 1 + 4 * DIFFUSION_STEP_FACTOR, w, h, SolverType::DENSITY);
-	linearSolver(nextTemp, temp, CONDUCTION_STEP_FACTOR, 1 + 4 * CONDUCTION_STEP_FACTOR, w, h, SolverType::DENSITY);
 	linearSolver(nextVelX, velX, DIFFUSION_STEP_FACTOR, 1 + 4 * DIFFUSION_STEP_FACTOR, w, h, SolverType::VEL_X);
 	linearSolver(nextVelY, velY, DIFFUSION_STEP_FACTOR, 1 + 4 * DIFFUSION_STEP_FACTOR, w, h, SolverType::VEL_Y);
 
@@ -285,7 +279,6 @@ void SmokeGrid::UpdateStep(float stepTime)
 			int ulIdx = blIdx + 1;
 			int urIdx = brIdx + 1;
 			smoke[idx] = fracll * nextSmoke[blIdx] + fraclr * nextSmoke[brIdx] + fracul * nextSmoke[ulIdx] + fracur * nextSmoke[urIdx];
-			temp[idx] = fracll * nextTemp[blIdx] + fraclr * nextTemp[brIdx] + fracul * nextTemp[ulIdx] + fracur * nextTemp[urIdx];
 			velX[idx] = fracll * nextVelX[blIdx] + fraclr * nextVelX[brIdx] + fracul * nextVelX[ulIdx] + fracur * nextVelX[urIdx];
 			velY[idx] = fracll * nextVelY[blIdx] + fraclr * nextVelY[brIdx] + fracul * nextVelY[ulIdx] + fracur * nextVelY[urIdx];
 		}
@@ -393,8 +386,8 @@ void SmokeGrid::Render(std::vector<float>& vbo, unsigned int vboLoc, unsigned in
 			}
 			else {
 				float modSmoke = smoke[n] / ((double)gridSize * gridSize);
-				float modTemp = (temp[n] - 280.0f) / 320.0f;
 				float alpha = modSmoke / (1 + modSmoke);
+				alpha *= alpha;
 				//alpha = modTemp;
 				BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(0.6f, 0.6f, 0.6f, alpha), normal, -1, -1);
 				//BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(1.0f, 0.0f, 0.0f, alpha), normal, -1, -1);
@@ -430,19 +423,20 @@ Material SmokeGrid::GetMaterial() const
 	return mat;
 }
 
-void SmokeGrid::CalculateToFile(int approxTiles, const SmokeSetup& setup, float time, float stepTime, const char* filename)
+void SmokeGrid::CalculateToFile(int approxTiles, const SmokeSetup& setup, float time, int stepsPerRender, const char* filename)
 {
+	float stepTime = 0.01f / stepsPerRender;
+	
 	std::cout << "Starting Tiles: " << approxTiles << " Time Step: " << stepTime << std::endl;
 	std::ofstream file(filename);
 	if (!file.is_open()) {
 		std::cout << "File " << filename << " failed to create\n";
 		return;
 	}
-	
+
 	SmokeGrid grid(approxTiles, setup, stepTime);
 	file << grid.w << "," << grid.h << "\n";
 	file << grid.gridSize << "\n";
-	file << stepTime << "\n";
 	for (auto i : grid.tileIsObstacle) {
 		if (i) {
 			file << "1";
@@ -456,12 +450,9 @@ void SmokeGrid::CalculateToFile(int approxTiles, const SmokeSetup& setup, float 
 	file << "\n";
 
 	grid.time = time;
-	int iter = 1;
-	if (stepTime == 0.001f)
-		iter = 10;
 
 	for (int i = 0; i < 1000; i++) {
-		for (int n = 0; n < iter; n++) {
+		for (int n = 0; n < stepsPerRender; n++) {
 			grid.UpdateStep(stepTime);
 		}
 		

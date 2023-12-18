@@ -30,7 +30,7 @@ SmokeSetup SmokeSetup::BallDrag() {
 	ss.x1 = 1.3f;
 	ss.y0 = 0.0f;
 	ss.y1 = 0.1f;
-	ss.intensity = 10.0f;
+	ss.intensity = 30.0f;
 	ss.heat = 0.0f;
 	ss.fuel = 0.0f;
 	ss.vel = Vec2F(0.0f, 4.0f);
