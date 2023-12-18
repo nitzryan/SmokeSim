@@ -6,6 +6,15 @@
 #include "../rendering/IRenderable.h"
 #include "SmokeSetup.h"
 
+struct Swirl {
+	float x;
+	float y;
+	float w;
+	float r;
+	float rmax;
+	float tleft;
+};
+
 class SmokeGrid : public IRenderable
 {
 public:
@@ -29,6 +38,7 @@ private:
 	float gridSize;
 	float time;
 	float stepTime;
+	float totalSimTime;
 	Vec2F wind;
 	std::vector<double> smoke;
 	std::vector<double> temp;
@@ -59,9 +69,12 @@ private:
 		ObstacleDirection dir;
 	};
 
+	std::vector<Swirl> swirls;
+
 	std::vector<sourceBlock> sources;
 	std::vector<Obstacle> obstacles;
 	std::vector<bool> tileIsObstacle;
+	std::vector<bool> tileIsSource;
 	//std::vector<RectRenderable> rects;
 
 

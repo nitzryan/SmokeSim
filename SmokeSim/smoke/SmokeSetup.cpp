@@ -53,10 +53,37 @@ SmokeSetup SmokeSetup::Campfire2() {
 	s.rects = {};
 	s.wind = Vec2F(0.0f, 0.0f);
 	smokeSource ss;
-	ss.x0 = 1.6f;
-	ss.x1 = 2.4f;
-	ss.y0 = 0.05f;
+	ss.x0 = 1.0f;
+	ss.x1 = 3.0f;
+	ss.y0 = 0.00f;
 	ss.y1 = 0.25f;
+	ss.intensity = 5.0f;
+	ss.heat = 1700.0f;
+	ss.vel = Vec2F(0.0f, 0.0f);
+
+	s.sources = { ss };
+	s.width = 4.f;
+	s.height = 4.f;
+	return s;
+}
+
+SmokeSetup SmokeSetup::Fireplace() {
+	SmokeSetup s;
+	s.circles = {};
+	ColorRGBA wall(0.2f, 0.8f, 0.8f, 1.0f);
+	s.rects = {
+		rectObj{0.1f, 0.8f, 0.0f, 3.0f, wall},
+		rectObj{0.8f, 1.9f, 1.25f, 3.0f, wall},
+		rectObj{2.1f, 3.2f, 1.25f, 3.0f, wall},
+		rectObj{3.2f, 3.9f, 0.0f, 3.0f, wall},
+		rectObj{0.1f, 3.9f, 0.0f, 0.1f, wall}
+	};
+	s.wind = Vec2F(0.0f, 0.0f);
+	smokeSource ss;
+	ss.x0 = 1.5f;
+	ss.x1 = 2.5f;
+	ss.y0 = 0.1f;
+	ss.y1 = 0.35f;
 	ss.intensity = 5.0f;
 	ss.heat = 1700.0f;
 	ss.vel = Vec2F(0.0f, 0.0f);

@@ -4,26 +4,35 @@
 #include <fstream>
 #include <iomanip>
 
+#include <cstdlib> // Rand
+
 #include "../rendering/BufferWriter.h"
 
 const double DIFFUSION_FACTOR = 0.01;
 const float AMBIENT_TEMP = 280.0f;
-const double CONDUCTION = 0.02;
+const double CONDUCTION = 0.002;
 const float MIN_TEMP_FIRE = 600.0f;
 const float O2_TO_TEMP = 100.0f;
 //const double STEF_BOLT_CONST = 0.0000000567;
 const double STEF_BOLT_CONST = 0.00000000567;
-const float LIFT_FACTOR = 0.05f;
+const float LIFT_FACTOR = 0.15f;
+const float TEMP_EXPAND_FACTOR = 0.04f;
+const int MAX_SWIRLS = 80;
+const float SPAWN_SWIRL_CHANCE = 0.75f;
 
 SmokeGrid::SmokeGrid(int approxTiles, const SmokeSetup& set, float st)
 {
+	srand(5611);
+
 	setup = set;
 	float aspectRatio = (float)(setup.width) / setup.height;
 	w = sqrt((float)approxTiles * aspectRatio);
 	h = w / aspectRatio;
 
 	gridSize = setup.width / (w - 1);
-	time = 0.f; stepTime = st;
+	time = 0.f; 
+	stepTime = st;
+	totalSimTime = 0.f;
 	smoke = std::vector<double>(w * h);
 	
 	temp = std::vector<double>(w * h, AMBIENT_TEMP);
@@ -129,8 +138,81 @@ SmokeGrid::SmokeGrid(int approxTiles, const SmokeSetup& set, float st)
 	}
 
 	tileIsObstacle = std::vector<bool>(w * h, false);
+
+	for (auto& r : setup.rects) {
+		for (int i = 1; i < w - 1; i++) {
+			for (int j = 1; j < h - 1; j++) {
+				float x = i * gridSize;
+				float y = j * gridSize;
+				if (x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1) {
+					tileIsObstacle[i * h + j] = true;
+				}
+			}
+		}
+	}
+
+	for (int i = 1; i < w - 1; i++) {
+		for (int j = 1; j < h - 1; j++) {
+			int idx = i * h + j;
+			if (tileIsObstacle[idx]) {
+				bool upClosed = tileIsObstacle[idx + 1];
+				bool downClosed = tileIsObstacle[idx - 1];
+				bool rightClosed = tileIsObstacle[idx + h];
+				bool leftClosed = tileIsObstacle[idx - h];
+
+				ObstacleDirection dir;
+				if (!upClosed && rightClosed && leftClosed && downClosed) {
+					dir = ObstacleDirection::U;
+				}
+				else if (!upClosed && !rightClosed && leftClosed && downClosed) {
+					dir = ObstacleDirection::UR;
+				}
+				else if (!upClosed && rightClosed && !leftClosed && downClosed) {
+					dir = ObstacleDirection::UL;
+				}
+				else if (upClosed && rightClosed && !leftClosed && downClosed) {
+					dir = ObstacleDirection::L;
+				}
+				else if (upClosed && rightClosed && !leftClosed && !downClosed) {
+					dir = ObstacleDirection::DL;
+				}
+				else if (upClosed && rightClosed && leftClosed && !downClosed) {
+					dir = ObstacleDirection::D;
+				}
+				else if (upClosed && !rightClosed && leftClosed && !downClosed) {
+					dir = ObstacleDirection::DR;
+				}
+				else if (upClosed && !rightClosed && leftClosed && downClosed) {
+					dir = ObstacleDirection::R;
+				}
+				else if (upClosed && rightClosed && leftClosed && downClosed) {
+					dir = ObstacleDirection::INT;
+				}
+				else {
+					std::cout << "Error: obstacle size too small, ignored\n";
+					continue;
+				}
+				obstacles.emplace_back(Obstacle{
+					i * h + j,
+					dir
+					});
+			}
+		}
+	}
+
+	tileIsObstacle = std::vector<bool>(w * h, false);
 	for (auto& i : obstacles) {
 		tileIsObstacle[i.tile] = true;
+	}
+
+	tileIsSource = std::vector<bool>(w * h, false);
+	for (auto& i : sources) {
+		tileIsSource[i.tile] = true;
+	}
+
+	swirls.reserve(MAX_SWIRLS);
+	for (int i = 0; i < MAX_SWIRLS; i++) {
+		swirls.emplace_back(Swirl{ 0, 0, 0, 0, 0, 0 });
 	}
 }
 
@@ -226,11 +308,33 @@ void SmokeGrid::linearSolver(std::vector<double>& x, std::vector<double>& x0, fl
 	}
 }
 
+float SpawnRandomness(float x, float y, float time) {
+	float result = 1.0f;
+	result += 0.1f * sinf(time + 0.5f * x + 0.2f * y);
+	result += 0.05f * sinf(2 * time + 2.0f * x + 1.0f * y);
+	result += 0.1f * sinf(0.25 * time);
+	return result;
+}
+
+void MaybeSpawnSwirl(Swirl& s, float stepTime) {
+	float p = SPAWN_SWIRL_CHANCE * stepTime;
+	int r = rand() % 10000;
+	if (p * 1000 > r) {
+		s.r = 0.04f + 0.04f * (float)(rand()) / RAND_MAX;
+		s.rmax = s.r * 1.25f;
+		s.w = -10.0f + 20.0f * (float)(rand()) / RAND_MAX;
+		s.tleft = 0.3f + 0.6f * (float)(rand()) / RAND_MAX;
+		s.x = 1.6f + 0.8f * (float)(rand()) / RAND_MAX;
+		s.y = 0.4f + 0.6f * (float)(rand()) / RAND_MAX;
+	}
+}
+
 void SmokeGrid::UpdateStep(float stepTime)
 {
 	// Radiate away temperature
 	for (auto& i : temp) {
-		if (i < AMBIENT_TEMP) {
+		if (i < AMBIENT_TEMP) { // Allows for simplification below, otherwise system can blow up if temp falls below ambient
+								// Due to heat radiating away from calculation
 			i = AMBIENT_TEMP;
 			continue;
 		}
@@ -240,12 +344,15 @@ void SmokeGrid::UpdateStep(float stepTime)
 
 	// Sources
 	for (auto& i : sources) {
-		double added = stepTime * i.intensity * gridSize * gridSize;
+		float x = i.tile / h * gridSize;
+		float y = i.tile % h * gridSize;
+		float randFactor = SpawnRandomness(x, y, totalSimTime);
+		double added = stepTime * i.intensity * gridSize * gridSize * randFactor;
 		smoke[i.tile] += added;
 		//velX[i.tile] = 0.9f * velX[i.tile] + 0.1f * i.vel.x;
 		//velY[i.tile] = 0.9f * velY[i.tile] + 0.1f * i.vel.y;
 		added = stepTime * i.heat;
-		temp[i.tile] = i.heat;
+		temp[i.tile] = i.heat * randFactor;
 	}
 
 	// Enforce left, right boundary conditions
@@ -261,13 +368,70 @@ void SmokeGrid::UpdateStep(float stepTime)
 		velY[i * h + h - 1] = velY[i * h + h - 2];
 	}
 
+	// Apply Swirls
+	for (auto& i : swirls) {
+		if (i.tleft > 0) {
+			i.tleft -= stepTime;
+
+			for (int j = 1; j < w - 1; j++) {
+				float x = j * gridSize;
+				float dx = x - i.x;
+				if (abs(dx) > i.rmax) {
+					continue;
+				}
+				float dx2 = dx * dx;
+
+				for (int k = 1; k < h - 1; k++) { // Don't check above certain point
+					float y = k * gridSize;
+					float dy = y - i.y;
+					if (abs(dy) > i.rmax) {
+						continue;
+					}
+					float d = sqrt(dx2 + dy * dy);
+					if (d > i.rmax) {
+						continue;
+					}
+
+					float mag = 1.0f;
+					if (d > i.r) {
+						mag = (d - i.r) / (i.rmax - i.r);
+					}
+
+					// Determine velocity of swirl, need to swirl relative to
+
+					float tileX = i.x / gridSize;
+					float tileY = i.y / gridSize;
+					int left = (int)tileX;
+					int right = left + 1;
+					int down = (int)tileY;
+					int up = down + 1;
+					float magX = tileX - left;
+					float magY = tileY - down;
+
+					float uSwirl = velX[h * left + down] * (1 - magX) * (1 - magY) +
+						velX[h * left + up] * (1 - magX) * magY +
+						velX[h * right + down] * magX * (1 - magY) +
+						velX[h * right + up] * magX * magY;
+					float vSwirl = velY[h * left + down] * (1 - magX) * (1 - magY) +
+						velY[h * left + up] * (1 - magX) * magY +
+						velY[h * right + down] * magX * (1 - magY) +
+						velY[h * right + up] * magX * magY;
+
+					int idx = j * h + k;
+					velX[idx] += (uSwirl - dy * i.w - velX[idx]) * mag;
+					velY[idx] += (vSwirl + dx * i.w - velY[idx]) * mag;
+				}
+			}
+		}
+		else {
+			MaybeSpawnSwirl(i, stepTime);
+		}
+	}
 
 	std::vector<double> nextSmoke = smoke;
 	std::vector<double> nextTemp = temp;
 	std::vector<double> nextVelX = velX;
 	std::vector<double> nextVelY = velY;
-
-	
 
 	// Modify velocity based on density (inversely proportional to temperature)
 	for (int i = 1; i < w - 1; i++) {
@@ -277,9 +441,14 @@ void SmokeGrid::UpdateStep(float stepTime)
 			float denBelow = temp[idx - 1];
 			float den = temp[idx];
 			float denAbove = temp[idx + 1];
+			float denRight = temp[idx + h];
+			float denLeft = temp[idx - h];
 
 			velY[idx] += LIFT_FACTOR * stepTime * (denBelow - den);
 			velY[idx] += LIFT_FACTOR * stepTime * (den - denAbove);
+			
+			velX[idx] += TEMP_EXPAND_FACTOR * stepTime * (denLeft - den);
+			velX[idx] += TEMP_EXPAND_FACTOR * stepTime * (den - denRight);
 		}
 	}
 
@@ -355,6 +524,7 @@ void SmokeGrid::UpdateStep(float stepTime)
 
 	// Move to next timestep
 	time -= stepTime;
+	totalSimTime += stepTime;
 }
 
 void SmokeGrid::Update(float dt)
@@ -427,9 +597,12 @@ void SmokeGrid::Render(std::vector<float>& vbo, unsigned int vboLoc, unsigned in
 			if (tileIsObstacle[n]) {
 				BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(0.9f, 0.2f, 0.2f, 1.0f), normal, -1, -1);
 			}
+			else if (tileIsSource[n]) {
+				BufferWriter::AddPoint(vbo, vboLoc, Pos2F(i * gridSize, j * gridSize), ColorRGBA(0.4f, 0.2f, 0.1f, 1.0f), normal, -1, -1);
+			}
 			else {
 				float modSmoke = smoke[n] / ((double)gridSize * gridSize);
-				float alpha = modSmoke / (1 + modSmoke);
+				float alpha = modSmoke / (3 + modSmoke);
 				ColorRGBA color(0.0f, 0.0f, 0.0f, alpha);
 
 				// Note temperatures are in kelvin
@@ -438,7 +611,7 @@ void SmokeGrid::Render(std::vector<float>& vbo, unsigned int vboLoc, unsigned in
 					float c = std::min(0.8f + (tm - 1300) * 0.01f, 1.0f);
 					color.r = c;
 					color.g = c;
-					color.b = 0.1f + std::min((tm - 1300) * 0.06f, 0.9f);
+					color.b = 0.1f + std::min((tm - 1300) * 0.001f, 0.9f);
 				}
 				else if (tm > 1000) { // orange -> yellow flame
 					color.r = 0.8f;

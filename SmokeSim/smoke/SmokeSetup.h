@@ -33,6 +33,7 @@ struct SmokeSetup
 {
 	static SmokeSetup Campfire();
 	static SmokeSetup Campfire2();
+	static SmokeSetup Fireplace();
 	static SmokeSetup BallDrag();
 
 	std::vector<circleObj> circles;
